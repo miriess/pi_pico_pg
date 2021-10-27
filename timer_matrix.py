@@ -1,7 +1,9 @@
 from micropython import const
 from machine import Pin, SPI, Timer
 from random import choice
+from time import sleep
 import framebuf
+from math import floor
 
 _NOOP = const(0)
 _DIGIT0 = const(1)
@@ -72,35 +74,94 @@ class Matrix8x8:
                 self.spi.write(bytearray([_DIGIT0 + y, self.buffer[(y * self.num) + m]]))
             self.cs(1)
 
-spi = SPI(0)
-display = Matrix8x8(spi, Pin(5), 4)
-
-running_matrix = [
-    [1] * 8 + [0] * 24 for i in range(8)
-    ]
-
-def change_display(matrix):
-    for i in range(32):
-        for j in range(8):
-            display.pixel(i, j, matrix[j][i])
-    display.show()
-
-def get_valid_rows(matrix):
-    return [i for i in range(8) if matrix[i] != 24 * [0] + 8 * [1]]
-    
-def progress_row(matrix, row_no):
-    valid_indices = [
-        i for i in range(31) if (matrix[row_no][i] == 1) and (matrix[row_no][i+1] == 0)
-        ]
-    chosen_index = choice(valid_indices)
-    matrix[row_no][chosen_index + 1] = 1
-    matrix[row_no][chosen_index] = 0
-    return matrix
-
-def progress_one_step():
-    global running_matrix
-    running_matrix = progress_row(running_matrix, choice(get_valid_rows(running_matrix)))
-    change_display(running_matrix)
-
-tim = Timer(period=1000, mode=Timer.PERIODIC, callback=lambda x:progress_one_step())
         
+class sandClock:
+    def __init__(self, total_time, num_rows, brightness, spi, cs_pin, matrix_count=4, no_blinks=20):
+        self.num_rows = num_rows
+        self.total_rows = matrix_count * 8
+        self.total_time = total_time
+        self.target_col =  [0] * (self.total_rows - num_rows) + [1] * num_rows
+        self.matrix = [
+            [1] * num_rows + [0] * (self.total_rows - num_rows) for i in range(8)
+            ]
+        self.tick_length = floor(
+            total_time * 1000 / (8 * num_rows * (self.total_rows - num_rows))
+            )
+        self.display = Matrix8x8(spi, cs_pin, matrix_count)
+        self.display.brightness(brightness)
+        self.display.text('10"', 0, 0)
+        self.display.show()
+        sleep(10)
+        self.change_display()
+        self.no_blinks = no_blinks
+        self.blinks_to_go = no_blinks
+        self.next_blink_state = 1
+        self.calculate_valid_cols()
+        print(self.valid_cols)
+        self.blink_timer = Timer()
+        self.main_timer = Timer(
+            period=self.tick_length,
+            mode=Timer.PERIODIC,
+            callback=self.one_step
+            )
+    
+    def change_display(self):
+        for i in range(self.total_rows):
+            for j in range(8):
+                self.display.pixel(i, j, self.matrix[j][i])
+        self.display.show()
+    
+    def calculate_valid_cols(self):
+        self.valid_cols = [
+            i for i in range(8) if self.matrix[i] != self.target_col
+            ]
+    
+    def progress_col(self, col_id):
+        valid_indices = [
+            i for i in range(self.total_rows - 1)
+            if (self.matrix[col_id][i] == 1) and (self.matrix[col_id][i+1] == 0)
+            ]
+        chosen_index = choice(valid_indices)
+        self.matrix[col_id][chosen_index + 1] = 1
+        self.matrix[col_id][chosen_index] = 0
+    
+    def one_step(self, timer):
+        self.progress_col(
+            choice(self.valid_cols)
+            )
+        self.change_display()
+        self.calculate_valid_cols()
+        if len(self.valid_cols) == 0:
+            self.main_timer.deinit()
+            sleep(0.5)
+            self.blink_timer.init(
+                period=500,
+                mode=Timer.PERIODIC,
+                callback=self.blink
+            )
+    
+    def blink(self, timer):
+        self.display.fill(self.next_blink_state)
+        self.display.show()
+        self.next_blink_state = 0 if self.next_blink_state else 1
+        self.blinks_to_go -= 1
+        if self.blinks_to_go == 0:
+            self.blink_timer.deinit()
+            self.matrix = [
+                [1] * self.num_rows + [0] * (self.total_rows - self.num_rows) for i in range(8)
+                ]
+            self.calculate_valid_cols()
+            self.change_display()
+            self.display.show()
+            self.next_blink_state = 1
+            self.blinks_to_go = self.no_blinks
+            self.main_timer.init(
+                period=self.tick_length,
+                mode=Timer.PERIODIC,
+                callback=self.one_step
+                )
+
+spi = SPI(0)
+cs_pin = Pin(5)
+
+sc = sandClock(300, 12, 1, spi, cs_pin)
