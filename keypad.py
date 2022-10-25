@@ -36,9 +36,8 @@ def reverse_readout_pins(col_id):
 
 
 def get_value_for_column(col_id):
-    print('column: ' + f'{col_id}')
     reverse_readout_pins(col_id)
-    sleep(0.3)
+    sleep(1)
     return initialize_pins()
 
 
