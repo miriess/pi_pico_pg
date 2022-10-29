@@ -1,6 +1,7 @@
 from machine import Pin
 from time import sleep
 from sys import exit
+from picoblinkt import set_brightness, set_pixel, show, set_all
 
 column_list = [20, 19, 18]
 row_list = [10, 11, 12, 13]
@@ -10,6 +11,8 @@ keypad_matrix = [
     ['2', '5', '8', '0'],
     ['3', '6', '9', '#']
 ]
+
+set_brightness(0.04)
 
 
 def initialize_pins():
@@ -43,7 +46,15 @@ def get_value_for_column(col_id):
 
 
 def handle_result(i, j):
-    print(keypad_matrix[i][j])
+    result = keypad_matrix[i][j]
+    print(result)
+    if result in ['*', '#']:
+        set_all(255, 255, 0)
+    elif int(result) % 2 == 0:
+        set_all(255, 0, 0)
+    else:
+        set_all(0, 255, 255)
+    show()
 
 
 CP, RP = initialize_pins()
