@@ -2,7 +2,7 @@ from machine import Pin
 from neopixel import NeoPixel
 from time import sleep
 
-sleeptime = 0.5
+sleeptime = 1
 
 np_pow = Pin(11, Pin.OUT, value=1)
 np_dat = Pin(12, Pin.OUT)
@@ -28,11 +28,11 @@ combinations = [
     [0,0,0]
 ]
 
-np_pow.value(1)
+# np_pow.value(1) # not needed?
 
 while True:
     for comb in combinations:
         set_pixels(*comb)
-        np_arr[0] = [50*colval for colval in comb]
+        np_arr[0] = [150*colval for colval in comb]
         np_arr.write()
         sleep(sleeptime)
