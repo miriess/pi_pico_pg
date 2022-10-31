@@ -28,11 +28,9 @@ combinations = [
     [0,0,0]
 ]
 
-# np_pow.value(1) # not needed?
-
 while True:
     for comb in combinations:
         set_pixels(*comb)
-        np_arr[0] = [150*colval for colval in comb]
+        np_arr[0] = [40*colval for colval in comb]
         np_arr.write()
         sleep(sleeptime)
