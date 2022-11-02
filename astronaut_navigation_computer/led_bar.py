@@ -1,10 +1,4 @@
-"""
-Library for the Pimoroni Blinkt! - 8-pixel APA102 LED display.
-Modified by @miriess to work with pi pico.
-Original source: https://github.com/pimoroni/blinkt
-"""
 import time
-
 from machine import Pin
 
 
