@@ -1,4 +1,5 @@
 from machine import Pin
+from time import sleep
 
 column_list = [20, 19, 18]
 row_list = [10, 11, 12, 13]
@@ -40,7 +41,9 @@ def get_user_input():
     while True:
         for i, gpiopin in enumerate(CP):
             if gpiopin.value() == 0:
-                return get_value_for_column(i)
+                return_value = get_value_for_column(i)
+                sleep(0.5)
+                return return_value
 
 
 if __name__ == '__main__':
