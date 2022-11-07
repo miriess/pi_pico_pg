@@ -1,5 +1,7 @@
 from led_bar import set_all, set_pixel, show
+from buzzer import affirmative, wrong_input
 from time import sleep
+from _thread import start_new_thread
 
 flash_frequency = 10
 flash_count = 10
@@ -22,6 +24,7 @@ def handle_user_input(inputstring, valid_strings_list):
             return '', False
 
 def flash_red():
+    start_new_thread(wrong_input, ())
     for _ in range(flash_count):
         set_all(255, 0, 0)
         show()
@@ -32,6 +35,7 @@ def flash_red():
 
 
 def show_result(length):
+    start_new_thread(affirmative, ())
     for i in range(length):
         set_pixel(2*i, 0, 160, 50)
         set_pixel(2*i + 1, 0, 160, 50)
@@ -42,6 +46,7 @@ def show_result(length):
 
 
 def success():
+    start_new_thread(affirmative, ())
     for _ in range(flash_count):
         set_all(0, 255, 0)
         show()
