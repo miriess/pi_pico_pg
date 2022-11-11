@@ -4,8 +4,8 @@ from machine import Pin
 
 __version__ = '0.1.2'
 
-DAT = 0
-CLK = 1
+DAT = 28
+CLK = 27
 
 datpin = Pin(DAT, Pin.OUT)
 clkpin = Pin(CLK, Pin.OUT)

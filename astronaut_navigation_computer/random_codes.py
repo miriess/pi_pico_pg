@@ -12,5 +12,5 @@ for i in range(49):
 
 code_json = {'codes': codelist}
 
-with open('codelist.json', 'w') as outputfile:
-    outputfile.write(json.dumps(code_json, indent=2))
+# with open('codelist.json', 'w') as outputfile:
+#     outputfile.write(json.dumps(code_json, indent=2))

@@ -1,8 +1,8 @@
 from machine import Pin
 from time import sleep
 
-column_list = [20, 19, 18]
-row_list = [10, 11, 12, 13]
+column_list = [9,8,7]
+row_list = [13,12,11,10]
 
 keypad_matrix = [
     ['1', '4', '7', '*'],

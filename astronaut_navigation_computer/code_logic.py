@@ -1,5 +1,5 @@
 from led_bar import set_all, set_pixel, show
-from buzzer import affirmative, wrong_input
+from buzzer import affirmative, wrong_input, code_correct
 from time import sleep
 from _thread import start_new_thread
 
@@ -46,7 +46,7 @@ def show_result(length):
 
 
 def success():
-    start_new_thread(affirmative, ())
+    start_new_thread(code_correct, ())
     for _ in range(flash_count):
         set_all(0, 255, 0)
         show()
